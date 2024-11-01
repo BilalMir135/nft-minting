@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 casper-contract = "4.0.0"
 casper-types = "4.0.1"
+contract-utils = { path = "../utils/contract-utils" }
 
 [[bin]]
 name = "contract"
