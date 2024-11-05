@@ -1,39 +1,29 @@
-import {
-  CasperClient,
-  Contracts,
-  RuntimeArgs,
-  CLValueBuilder,
-  CLPublicKey,
-  CLKey,
-  CLAccountHash,
-} from 'casper-js-sdk';
+import { CasperClient, Contracts, RuntimeArgs, CLValueBuilder, CLByteArray } from 'casper-js-sdk';
 import fs from 'fs';
 import path from 'path';
 
-import { NETWORK, NODE_ADDRESS, CEP78_Contract_KEYS } from '../constants';
+import { NETWORK, NODE_ADDRESS, CEP78_CONTRACT } from '../constants';
 import { AdmainKeypair, User1Keypair } from '../accounts';
+import { accHashToKey, hashToKey } from '../utils/input';
 
 const MINTER_CONTRACT_WASM = path.resolve(
   __dirname,
   '../../../contract/target/wasm32-unknown-unknown/release/contract.wasm'
 );
+
+// const ADMIN_ACCOUNT_HASH =
+//   'account-hash-77bd81299efc626bd029edf887823e52235e3550bfa210d621ad4a5487b7ed1f';
+const ADMIN_ACCOUNT_HASH = AdmainKeypair.publicKey.toAccountHashStr();
+
 const casperClient = new CasperClient(NODE_ADDRESS);
 const contract = new Contracts.Contract(casperClient);
 const contractWasm = new Uint8Array(fs.readFileSync(MINTER_CONTRACT_WASM).buffer);
 
 export async function installMinterContract() {
-  const adminPublicKey = AdmainKeypair.publicKey.toAccountHashStr();
-  const contractHashAsByteArray = Uint8Array.from(
-    Buffer.from(CEP78_Contract_KEYS.contractHash.slice(5), 'hex')
-  );
-  const cep78ContractHash = new CLKey(new CLAccountHash(contractHashAsByteArray));
-
   const runtimeArguments = RuntimeArgs.fromMap({
-    // admin: CLPublicKey.fromHex(adminPublicKey),
-    // admin: new CLKey(new CLAccountHash(AdmainKeypair.publicKey.data)),
-    admin: AdmainKeypair.publicKey,
-    fund_manager: AdmainKeypair.publicKey,
-    cep78_package_hash: cep78ContractHash,
+    admin: accHashToKey(ADMIN_ACCOUNT_HASH),
+    fund_manager: accHashToKey(ADMIN_ACCOUNT_HASH),
+    cep78_package_hash: hashToKey(CEP78_CONTRACT.packageHash),
     mint_fee: CLValueBuilder.u256(80e9),
   });
 
@@ -48,14 +38,4 @@ export async function installMinterContract() {
 
   const deployHash = await casperClient.putDeploy(deploy);
   console.log('deployHash', deployHash);
-
-  // const deploy = await casperClient.getDeploy(
-  //   '5813e80313ca4891dfa1c51040420e8f831dc37cdfa36af7dd9644932a7a9508'
-  // );
-
-  // const executionResults = deploy[1].execution_results;
-
-  // console.log('deployHash', executionResults);
 }
-
-// hash-a72b02075a3fa7b9ab445be55241147016559a32c82a2d3c07128e3a9c96c545

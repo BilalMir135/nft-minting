@@ -37,3 +37,15 @@ pub fn get_mint_fee() -> U256 {
 pub fn set_cep78_package_hash(cep78_package_hash:Key) {
     set_key(NAMED_KEY_CEP78_PACKAGE_HASH, cep78_package_hash);
 }
+
+pub fn get_cep78_package_hash() -> Key {
+    get_key(NAMED_KEY_CEP78_PACKAGE_HASH).unwrap_or_revert()
+}
+
+pub fn set_temp(admin:Key) {
+    set_key("temp", admin);
+}
+
+pub fn log_state(name: &str, value: &str) {
+    set_key(name, value);
+}

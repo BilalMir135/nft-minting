@@ -8,7 +8,9 @@ pub enum Error {
     PermissionDenied = 1,
     WrongArguments = 2,
     AdminNotSet = 3,
-    InvalidContext=4
+    InvalidContext = 4,
+    MissingContractPackageHash = 5,
+    InvalidContractPackageHash = 6,
 }
 
 impl From<Error> for ApiError {

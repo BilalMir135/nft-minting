@@ -51,9 +51,11 @@ const ARG_ADMIN: &str = "admin";
 const ARG_FUND_MANAGER: &str = "fund_manager";
 const ARG_CEP78_PACKAGE_HASH: &str = "cep78_package_hash";
 const ARG_MINT_FEE: &str = "mint_fee";
+const ARG_NFT_OWMER: &str = "nft_owner";
 
 const ENTRY_POINT_CONSTRUCTOR: &str = "constructor";
 const ENTRY_POINT_UPDATE_ADMIN: &str = "update_admin";
+const ENTRY_POINT_FREE_MINT: &str = "free_mint";
 
 const NAMED_KEY_MINTER_CONTRACT_HASH: &str = "minter_contract_hash";
 const NAMED_KEY_MINTER_CONTRACT_PACKAGE_HASH: &str = "minter_contract_package_hash";
@@ -72,6 +74,12 @@ pub extern "C" fn constructor() {
 pub extern "C" fn update_admin() {
     let admin = runtime::get_named_arg::<Key>(ARG_ADMIN);
     Minter::default().update_admin(admin).unwrap_or_revert();
+}
+
+#[no_mangle]
+pub extern "C" fn free_mint() {
+    let nft_owner = runtime::get_named_arg::<Key>(ARG_NFT_OWMER);
+    Minter::default().free_mint(nft_owner).unwrap_or_revert();
 }
 
 #[no_mangle]
@@ -142,6 +150,13 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         ENTRY_POINT_UPDATE_ADMIN,
         vec![Parameter::new(ARG_ADMIN, String::cl_type()),],
+        String::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        ENTRY_POINT_FREE_MINT,
+        vec![Parameter::new(ARG_NFT_OWMER, String::cl_type()),],
         String::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
