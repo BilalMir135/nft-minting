@@ -9,7 +9,7 @@ import { updateAdmin } from './minter/updateAdmin';
 import { mintNFT } from './minter/mint';
 
 import { installCep78 } from './cep78/install';
-import { mint, addNewAclWhitelist, readCep78Contract } from './cep78/actions';
+import { mint, addNewAclWhitelist, readCep78Contract, registerOwner } from './cep78/actions';
 
 import { AdmainKeypair, User1Keypair } from './accounts';
 
@@ -21,12 +21,15 @@ async function main() {
   //step # 03
   // await addNewAclWhitelist();
   //setp # 04
-  await mintNFT();
-
+  // await mintNFT();
   // await readCep78Contract();
+
+  // await registerOwner();
+  // await mint();
+
   // console.log('ab', new CLKey(new CLAccountHash(AdmainKeypair.publicKey.data)));
   // await installMinterContract();
-  // await readContract();
+  await readContract();
   // await updateAdmin();
   // console.log('admin', AdmainKeypair.publicKey.toAccountHashStr());
   // console.log('user', User1Keypair.publicKey.toAccountHashStr());

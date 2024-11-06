@@ -1,6 +1,6 @@
-import { RuntimeArgs } from 'casper-js-sdk';
+import { RuntimeArgs, CLValueBuilder } from 'casper-js-sdk';
 
-import { AdmainKeypair } from '../accounts';
+import { AdmainKeypair, User1Keypair } from '../accounts';
 import { NETWORK } from '../constants';
 import { getMinterContract, getCasperClient } from '../utils/helpers';
 import { accHashToKey } from '../utils/input';
@@ -10,15 +10,16 @@ export async function mintNFT() {
   const contract = getMinterContract();
 
   const runtimeArguments = RuntimeArgs.fromMap({
-    nft_owner: accHashToKey(AdmainKeypair.publicKey.toAccountHashStr()),
+    nft_owner: accHashToKey(User1Keypair.publicKey.toAccountHashStr()),
+    count: CLValueBuilder.u64(3),
   });
 
   const deploy = contract.callEntrypoint(
     'free_mint',
     runtimeArguments,
     AdmainKeypair.publicKey,
-    NETWORK, // or "casper-test" for Testnet
-    '8000000000', // 1 CSPR (10^9 Motes)
+    NETWORK,
+    (20 * 1e9).toString(),
     [AdmainKeypair]
   );
 

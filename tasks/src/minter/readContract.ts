@@ -10,6 +10,7 @@ export async function readContract() {
   const fundManager: CLByteArray = await contract.queryContractData(['fund_manager']);
   const mintFee: BigNumber = await contract.queryContractData(['mint_fee']);
   const cep78ContractHash: CLByteArray = await contract.queryContractData(['cep78_package_hash']);
+  const mintCount: BigNumber = await contract.queryContractData(['mint_count']);
 
   console.log('admin', new CLPublicKey(admin.data, CLPublicKeyTag.ED25519).toHex());
   console.log('fundManager', new CLPublicKey(fundManager.data, CLPublicKeyTag.ED25519).toHex());
@@ -18,4 +19,5 @@ export async function readContract() {
     'cep78ContractHash',
     new CLPublicKey(cep78ContractHash.data, CLPublicKeyTag.ED25519).toHex()
   );
+  console.log('mintCount', mintCount.toString());
 }

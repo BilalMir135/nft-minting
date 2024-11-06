@@ -51,6 +51,18 @@ export async function addNewAclWhitelist() {
   console.log('deployHash', deployHash);
 }
 
+export async function registerOwner() {
+  const deploy = cep78Client.register(
+    { tokenOwner: AdmainKeypair.publicKey },
+    (6 * 1e9).toString(),
+    AdmainKeypair.publicKey,
+    [AdmainKeypair]
+  );
+
+  const deployHash = await deploy.send(NODE_ADDRESS);
+  console.log('deployHash', deployHash);
+}
+
 export async function readCep78Contract() {
   const isAccountWhitelisted = await cep78Client.isAccountWhitelisted(AdmainKeypair.publicKey);
   console.log('isAccountWhitelisted', isAccountWhitelisted);
@@ -63,12 +75,14 @@ export async function readCep78Contract() {
   const totalMints: BigNumber = await cep78Client.numOfMintedTokens();
   console.log('totalMints', totalMints.toString());
 
-  const balance = await cep78Client.getBalanceOf(User1Keypair.publicKey);
-  console.log('balance', balance);
+  // const balance = await cep78Client.getBalanceOf(User1Keypair.publicKey);
+  // console.log('balance', balance);
 
   const ownerOf = await cep78Client.getOwnerOf('0');
   console.log('ownerOf', ownerOf);
 
   const metdatda = await cep78Client.getMetadataOf('0');
   console.log('metdatda', metdatda);
+
+  console.log('ah =>', User1Keypair.publicKey.toAccountHashStr());
 }

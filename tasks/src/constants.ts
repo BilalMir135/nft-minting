@@ -12,8 +12,8 @@ const NodeAddress: Record<Network, string> = {
 
 const CEP78Contract = {
   [Network.LOCAL]: {
-    contractHash: 'hash-7320ca18d02e935a312106d1f4e75a7070d18f5a02600839700b4a0dfbe5383c',
-    packageHash: 'hash-dd4936cb4aaaddc17c234d2bf006a4e97c6d128e5300724ba7186506a79b0f5f',
+    contractHash: 'hash-d1d6a69d87676a8f125f9e3c2cd3e2328940e38f6a2a94af2436c3527e9d014c',
+    packageHash: 'hash-a1a1d41ac0ea24aa19c50ef0a312b3c446185caf0d3a2581b199ff68012c190a',
   },
   [Network.TEST]: { contractHash: '', packageHash: '' },
   [Network.MAIN]: { contractHash: '', packageHash: '' },
@@ -21,8 +21,8 @@ const CEP78Contract = {
 
 const MinterContract = {
   [Network.LOCAL]: {
-    contractHash: 'hash-5edeb565b3659d33eac83d7b1ee7f86cd56b84a568cdeb94cb5ea1287c81f35d',
-    packageHash: 'hash-6432948fdfad6cbba5752f2c8e00f0c922119ed15c62f7336fdb1404633af0c5',
+    contractHash: 'hash-eb2d8b9cbad200e27703a804394532792eb4aac610d95d226b8ad0c0e771a2d6',
+    packageHash: 'hash-8deaa98cfa314d72e5bf3c11475739ad7f9cfdcc800e5c5a5dcf31ccbf4b13ff',
   },
   [Network.TEST]: { contractHash: '', packageHash: '' },
   [Network.MAIN]: { contractHash: '', packageHash: '' },
