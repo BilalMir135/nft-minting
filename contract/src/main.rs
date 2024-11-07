@@ -5,13 +5,27 @@
 compile_error!("target arch should be wasm32: compile with '--target wasm32-unknown-unknown'");
 
 extern crate alloc;
-use alloc::{vec, collections::BTreeSet, format, string::{String, ToString}};
+use alloc::{
+    boxed::Box, 
+    vec, 
+    vec::Vec, 
+    collections::BTreeSet, 
+    format, 
+    string::{String, ToString}
+};
 
 use casper_contract::{
     contract_api::{runtime, storage},
     unwrap_or_revert::UnwrapOrRevert,
 };
-use casper_types::{runtime_args, Key, URef, U256, ContractPackageHash, RuntimeArgs, EntryPoint, EntryPoints, EntryPointType, EntryPointAccess, Parameter, Group, CLTyped};
+use casper_types::{
+    runtime_args, 
+    CLType, 
+    Key, URef, U256, 
+    ContractPackageHash, RuntimeArgs, 
+    EntryPoint, EntryPoints, EntryPointType, 
+    EntryPointAccess, Parameter, Group, CLTyped
+};
 use contract_utils::{ContractContext, OnChainContractStorage};
 
 use contract::minter::MINTER;
@@ -34,6 +48,7 @@ impl Minter {
         fund_manager: Key,
         cep78_package_hash: Key,
         mint_fee: U256,
+        only_whitelist: bool,
     ) {
         MINTER::init(
             self,
@@ -41,6 +56,7 @@ impl Minter {
             fund_manager,
             cep78_package_hash,
             mint_fee,
+            only_whitelist
         )
     }
 }
@@ -51,11 +67,20 @@ const ARG_ADMIN: &str = "admin";
 const ARG_FUND_MANAGER: &str = "fund_manager";
 const ARG_CEP78_PACKAGE_HASH: &str = "cep78_package_hash";
 const ARG_MINT_FEE: &str = "mint_fee";
+const ARG_ONLY_WHITELIST: &str = "only_whitelist";
+
 const ARG_NFT_OWMER: &str = "nft_owner";
+const ARG_COUNT: &str = "count";
+
+const ARG_WHITELIST_ACCOUNTS: &str = "whitelist_accounts";
+const ARG_WHITELIST_VALUES: &str = "whitelist_values";
 
 const ENTRY_POINT_CONSTRUCTOR: &str = "constructor";
 const ENTRY_POINT_UPDATE_ADMIN: &str = "update_admin";
 const ENTRY_POINT_FREE_MINT: &str = "free_mint";
+const ENTRY_POINT_PUBLIC_MINT: &str = "public_mint"; 
+const ENTRY_POINT_SET_WHITELIST: &str = "set_whitelist";
+const ENTRY_POINT_RESET_WHITELIST: &str = "reset_whitelist";
 
 const NAMED_KEY_MINTER_CONTRACT_HASH: &str = "minter_contract_hash";
 const NAMED_KEY_MINTER_CONTRACT_PACKAGE_HASH: &str = "minter_contract_package_hash";
@@ -66,8 +91,15 @@ pub extern "C" fn constructor() {
     let fund_manager = runtime::get_named_arg::<Key>(ARG_FUND_MANAGER);
     let cep78_package_hash = runtime::get_named_arg::<Key>(ARG_CEP78_PACKAGE_HASH);
     let mint_fee = runtime::get_named_arg::<U256>(ARG_MINT_FEE);
+    let only_whitelist = runtime::get_named_arg::<bool>(ARG_ONLY_WHITELIST);
 
-    Minter::default().constructor(admin, fund_manager, cep78_package_hash, mint_fee);
+    Minter::default().constructor(
+        admin, 
+        fund_manager, 
+        cep78_package_hash, 
+        mint_fee,
+        only_whitelist
+    );
 }
 
 #[no_mangle]
@@ -79,7 +111,29 @@ pub extern "C" fn update_admin() {
 #[no_mangle]
 pub extern "C" fn free_mint() {
     let nft_owner = runtime::get_named_arg::<Key>(ARG_NFT_OWMER);
-    Minter::default().free_mint(nft_owner).unwrap_or_revert();
+    let count = runtime::get_named_arg::<u64>(ARG_COUNT);
+    Minter::default().free_mint(nft_owner, count).unwrap_or_revert();
+}
+
+#[no_mangle]
+pub extern "C" fn set_whitelist() {
+    let accounts = runtime::get_named_arg::<Vec<Key>>(ARG_WHITELIST_ACCOUNTS);
+    let values = runtime::get_named_arg::<Vec<bool>>(ARG_WHITELIST_VALUES);
+    Minter::default().set_whitelist(accounts, values).unwrap_or_revert();
+}
+
+#[no_mangle]
+pub extern "C" fn public_mint() {
+    let nft_owner = runtime::get_named_arg::<Key>(ARG_NFT_OWMER);
+    let count = runtime::get_named_arg::<u64>(ARG_COUNT);
+    Minter::default().public_mint(nft_owner, count).unwrap_or_revert();
+}
+
+#[no_mangle]
+pub extern "C" fn reset_whitelist() {
+    let accounts = runtime::get_named_arg::<Vec<Key>>(ARG_WHITELIST_ACCOUNTS);
+    let values = runtime::get_named_arg::<Vec<bool>>(ARG_WHITELIST_VALUES);
+    Minter::default().reset_whitelist(accounts, values).unwrap_or_revert();
 }
 
 #[no_mangle]
@@ -88,6 +142,7 @@ pub extern "C" fn call() {
     let fund_manager = runtime::get_named_arg::<Key>(ARG_FUND_MANAGER);
     let cep78_package_hash = runtime::get_named_arg::<Key>(ARG_CEP78_PACKAGE_HASH);
     let mint_fee = runtime::get_named_arg::<U256>(ARG_MINT_FEE);
+    let only_whitelist = runtime::get_named_arg::<bool>(ARG_ONLY_WHITELIST);
 
     let (contract_hash, _) = storage::new_contract(
         get_entry_points(),
@@ -110,6 +165,7 @@ pub extern "C" fn call() {
         ARG_FUND_MANAGER => fund_manager,
         ARG_CEP78_PACKAGE_HASH => cep78_package_hash,
         ARG_MINT_FEE => mint_fee,
+        ARG_ONLY_WHITELIST => only_whitelist
     };
 
     let constructor_access: URef =
@@ -138,10 +194,11 @@ fn get_entry_points() -> EntryPoints {
     entry_points.add_entry_point(EntryPoint::new(
         ENTRY_POINT_CONSTRUCTOR,
         vec![
-            Parameter::new(ARG_ADMIN, String::cl_type()),
-            Parameter::new(ARG_FUND_MANAGER, String::cl_type()),
-            Parameter::new(ARG_CEP78_PACKAGE_HASH, String::cl_type()),
-            Parameter::new(ARG_MINT_FEE, U256::cl_type()),
+            Parameter::new(ARG_ADMIN, CLType::Key),
+            Parameter::new(ARG_FUND_MANAGER, CLType::Key),
+            Parameter::new(ARG_CEP78_PACKAGE_HASH, CLType::Key),
+            Parameter::new(ARG_MINT_FEE, CLType::U256),
+            Parameter::new(ARG_ONLY_WHITELIST, CLType::Bool),
         ],
         <()>::cl_type(),
         EntryPointAccess::Groups(vec![Group::new(CONSTRUCTOR_GROUP)]),
@@ -149,14 +206,47 @@ fn get_entry_points() -> EntryPoints {
     ));
     entry_points.add_entry_point(EntryPoint::new(
         ENTRY_POINT_UPDATE_ADMIN,
-        vec![Parameter::new(ARG_ADMIN, String::cl_type()),],
+        vec![Parameter::new(ARG_ADMIN, CLType::Key)],
         String::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
         ENTRY_POINT_FREE_MINT,
-        vec![Parameter::new(ARG_NFT_OWMER, String::cl_type()),],
+        vec![
+            Parameter::new(ARG_NFT_OWMER, CLType::Key),
+            Parameter::new(ARG_COUNT, CLType::U64),
+        ],
+        String::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        ENTRY_POINT_PUBLIC_MINT,
+        vec![
+            Parameter::new(ARG_NFT_OWMER, CLType::Key),
+            Parameter::new(ARG_COUNT, CLType::U64),
+        ],
+        String::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        ENTRY_POINT_SET_WHITELIST,
+        vec![
+            Parameter::new(ARG_WHITELIST_ACCOUNTS, CLType::List(Box::new(CLType::Key))),
+            Parameter::new(ARG_WHITELIST_VALUES, CLType::List(Box::new(CLType::Bool))),
+        ],
+        String::cl_type(),
+        EntryPointAccess::Public,
+        EntryPointType::Contract,
+    ));
+    entry_points.add_entry_point(EntryPoint::new(
+        ENTRY_POINT_RESET_WHITELIST,
+        vec![
+            Parameter::new(ARG_WHITELIST_ACCOUNTS, CLType::List(Box::new(CLType::Key))),
+            Parameter::new(ARG_WHITELIST_VALUES, CLType::List(Box::new(CLType::Bool))),
+        ],
         String::cl_type(),
         EntryPointAccess::Public,
         EntryPointType::Contract,

@@ -75,13 +75,13 @@ export async function readCep78Contract() {
   const totalMints: BigNumber = await cep78Client.numOfMintedTokens();
   console.log('totalMints', totalMints.toString());
 
-  // const balance = await cep78Client.getBalanceOf(User1Keypair.publicKey);
-  // console.log('balance', balance);
+  const balance = await cep78Client.getBalanceOf(User1Keypair.publicKey);
+  console.log('balance', balance);
 
   const ownerOf = await cep78Client.getOwnerOf('0');
   console.log('ownerOf', ownerOf);
 
-  const metdatda = await cep78Client.getMetadataOf('0');
+  const metdatda = await cep78Client.getMetadataOf('1');
   console.log('metdatda', metdatda);
 
   console.log('ah =>', User1Keypair.publicKey.toAccountHashStr());

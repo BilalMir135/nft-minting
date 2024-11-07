@@ -1,6 +1,6 @@
 use alloc::{format, string::String};
-use casper_contract::{contract_api::runtime,  unwrap_or_revert::UnwrapOrRevert};
-use casper_types::{ContractPackageHash, Key, RuntimeArgs, runtime_args};
+use casper_contract::{contract_api::runtime, unwrap_or_revert::UnwrapOrRevert};
+use casper_types::{ContractPackageHash, Key, RuntimeArgs, URef, runtime_args};
 
 use crate::data;
 use crate::error::Error;
@@ -20,33 +20,40 @@ fn generate_metadata(count: u64) -> String {
     }}"#, count)
 }
 
-pub fn register_owner(owner:Key) {
+pub fn balance_of(nft_owner: Key) -> u64 {
     let cep78_package_hash = get_cep78_package_hash();
 
-    let args = runtime_args! {
-        "token_owner" => owner,
-    };
+    let balance = runtime::call_versioned_contract::<u64>(
+        cep78_package_hash, 
+        None, 
+        "balance_of", 
+        runtime_args! {
+            "token_owner" => nft_owner,
+        }
+    );
 
-    runtime::call_versioned_contract(
+    return balance;
+}
+
+pub fn mint(nft_owner: Key, mint_count:u64) {
+    let cep78_package_hash = get_cep78_package_hash();
+
+    runtime::call_versioned_contract::<(String, URef)>(
         cep78_package_hash, 
         None, 
         "register_owner", 
-        args
-    )
-}
+        runtime_args! {
+            "token_owner" => nft_owner,
+        }
+    );
 
-pub fn mint(owner:Key) {
-    let cep78_package_hash = get_cep78_package_hash();
-
-    let args = runtime_args! {
-        "token_owner" => owner,
-        "token_meta_data" => generate_metadata(1)
-    };
-
-    runtime::call_versioned_contract(
+    runtime::call_versioned_contract::<(String, Key, String)>(
         cep78_package_hash, 
         None, 
         "mint", 
-        args
-    )
+        runtime_args! {
+            "token_owner" => nft_owner,
+            "token_meta_data" => generate_metadata(mint_count)
+        }
+    );
 }

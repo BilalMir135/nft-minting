@@ -11,6 +11,8 @@ pub enum Error {
     InvalidContext = 4,
     MissingContractPackageHash = 5,
     InvalidContractPackageHash = 6,
+    MintLimitExceed = 7,
+    NotWhitelisted = 8
 }
 
 impl From<Error> for ApiError {

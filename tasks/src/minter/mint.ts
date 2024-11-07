@@ -10,7 +10,7 @@ export async function mintNFT() {
   const contract = getMinterContract();
 
   const runtimeArguments = RuntimeArgs.fromMap({
-    nft_owner: accHashToKey(User1Keypair.publicKey.toAccountHashStr()),
+    nft_owner: accHashToKey(AdmainKeypair.publicKey.toAccountHashStr()),
     count: CLValueBuilder.u64(3),
   });
 
@@ -21,6 +21,28 @@ export async function mintNFT() {
     NETWORK,
     (20 * 1e9).toString(),
     [AdmainKeypair]
+  );
+
+  const deployHash = await casperClient.putDeploy(deploy);
+  console.log('deployHash', deployHash);
+}
+
+export async function publicNFT() {
+  const casperClient = getCasperClient();
+  const contract = getMinterContract();
+
+  const runtimeArguments = RuntimeArgs.fromMap({
+    nft_owner: accHashToKey(User1Keypair.publicKey.toAccountHashStr()),
+    count: CLValueBuilder.u64(3),
+  });
+
+  const deploy = contract.callEntrypoint(
+    'public_mint',
+    runtimeArguments,
+    User1Keypair.publicKey,
+    NETWORK,
+    (20 * 1e9).toString(),
+    [User1Keypair]
   );
 
   const deployHash = await casperClient.putDeploy(deploy);
