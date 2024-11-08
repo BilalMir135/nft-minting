@@ -1,9 +1,12 @@
-import { RuntimeArgs, CLValueBuilder } from 'casper-js-sdk';
+import { RuntimeArgs, CLValueBuilder, Contracts } from 'casper-js-sdk';
+import { BigNumber } from '@ethersproject/bignumber';
+import path from 'path';
+import fs from 'fs';
 
 import { AdmainKeypair, User1Keypair } from '../accounts';
-import { NETWORK } from '../constants';
+import { NETWORK, MINTER_CONTRACT } from '../constants';
 import { getMinterContract, getCasperClient } from '../utils/helpers';
-import { accHashToKey } from '../utils/input';
+import { accHashToKey, hashToKey } from '../utils/input';
 
 export async function mintNFT() {
   const casperClient = getCasperClient();
@@ -27,21 +30,38 @@ export async function mintNFT() {
   console.log('deployHash', deployHash);
 }
 
-export async function publicNFT() {
-  const casperClient = getCasperClient();
+async function getMintCost(count: number) {
   const contract = getMinterContract();
+  const mintFee: BigNumber = await contract.queryContractData(['mint_fee']);
+  return mintFee.mul(count).toString();
+}
+
+const MINT_SESSION_WASM = path.resolve(
+  __dirname,
+  '../../../mint-session/target/wasm32-unknown-unknown/release/public_mint_call.wasm'
+);
+
+export async function nativeNFT() {
+  const sessionWasm = new Uint8Array(fs.readFileSync(MINT_SESSION_WASM).buffer);
+  const casperClient = getCasperClient();
+  const contract = new Contracts.Contract(casperClient);
+
+  const count = 1;
+  const minCost = await getMintCost(count);
 
   const runtimeArguments = RuntimeArgs.fromMap({
     nft_owner: accHashToKey(User1Keypair.publicKey.toAccountHashStr()),
-    count: CLValueBuilder.u64(3),
+    count: CLValueBuilder.u64(1),
+    minter_package_hash: hashToKey(MINTER_CONTRACT.packageHash),
+    amount: CLValueBuilder.u512(minCost),
   });
 
-  const deploy = contract.callEntrypoint(
-    'public_mint',
+  const deploy = contract.install(
+    sessionWasm,
     runtimeArguments,
+    (20 * 1e9).toString(),
     User1Keypair.publicKey,
     NETWORK,
-    (20 * 1e9).toString(),
     [User1Keypair]
   );
 

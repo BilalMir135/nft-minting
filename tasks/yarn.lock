@@ -615,6 +615,14 @@ caniuse-lite@^1.0.30001669:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001676.tgz#fe133d41fe74af8f7cc93b8a714c3e86a86e6f04"
   integrity sha512-Qz6zwGCiPghQXGJvgQAem79esjitvJ+CxSbSQkW9H/UX5hg8XM88d4lp2W+MEQ81j+Hip58Il+jGVdazk1z9cw==
 
+casper-cep18-js-client@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/casper-cep18-js-client/-/casper-cep18-js-client-1.0.3.tgz#b99f66801bdfc3d35f3b21ccdddf4c999b2cf616"
+  integrity sha512-ssDb5td5SF1XHm1c+WCM1AiuuhuhBzN540LeiU6oqG8CnhzF51e26LDOx759a6I/m7gB1OoMmrlIF6BiiaAzUg==
+  dependencies:
+    "@ethersproject/bignumber" "^5.7.0"
+    "@noble/hashes" "^1.2.0"
+
 casper-cep78-js-client@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/casper-cep78-js-client/-/casper-cep78-js-client-1.5.1.tgz#d584b4c02451579bcc9b51b0d3ee9bd7c295f626"

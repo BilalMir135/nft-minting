@@ -6,7 +6,8 @@ import { CLPublicKey, CLAccountHash, CLKey } from 'casper-js-sdk';
 import { installMinterContract } from './minter/install';
 import { readContract } from './minter/readContract';
 import { updateAdmin } from './minter/updateAdmin';
-import { mintNFT, publicNFT } from './minter/mint';
+import { mintNFT, nativeNFT } from './minter/mint';
+import { setWhitelist } from './minter/whitelist';
 
 import { installCep78 } from './cep78/install';
 import { mint, addNewAclWhitelist, readCep78Contract, registerOwner } from './cep78/actions';
@@ -22,13 +23,12 @@ async function main() {
   // await addNewAclWhitelist();
   //setp # 04
   // await mintNFT();
-  // await publicNFT();
+  await nativeNFT();
 
-  await readCep78Contract();
-
+  // await setWhitelist();
+  // await readCep78Contract();
   // await registerOwner();
   // await mint();
-
   // console.log('ab', new CLKey(new CLAccountHash(AdmainKeypair.publicKey.data)));
   // await installMinterContract();
   // await readContract();

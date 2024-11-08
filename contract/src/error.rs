@@ -12,7 +12,10 @@ pub enum Error {
     MissingContractPackageHash = 5,
     InvalidContractPackageHash = 6,
     MintLimitExceed = 7,
-    NotWhitelisted = 8
+    NotWhitelisted = 8,
+    UableToReadPurse = 9,
+    NotEnoughBalance = 10,
+    InvalidAccountHash = 11
 }
 
 impl From<Error> for ApiError {

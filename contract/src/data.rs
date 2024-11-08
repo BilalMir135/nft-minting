@@ -93,10 +93,4 @@ pub fn get_only_whitelist() -> bool {
     get_key(NAMED_KEY_ONLY_WHITELIST).unwrap_or_revert()
 }
 
-pub fn set_temp(admin: Key) {
-    set_key("temp", admin);
-}
 
-pub fn log_state(name: &str, value: &str) {
-    set_key(name, value);
-}
