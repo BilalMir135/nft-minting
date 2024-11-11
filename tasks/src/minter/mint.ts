@@ -4,7 +4,7 @@ import path from 'path';
 import fs from 'fs';
 
 import { AdmainKeypair, User1Keypair } from '../accounts';
-import { NETWORK, MINTER_CONTRACT } from '../constants';
+import { NETWORK, MINTER_CONTRACT, WETH_CONTRACT } from '../constants';
 import { getMinterContract, getCasperClient } from '../utils/helpers';
 import { accHashToKey, hashToKey } from '../utils/input';
 
@@ -41,7 +41,7 @@ const MINT_SESSION_WASM = path.resolve(
   '../../../mint-session/target/wasm32-unknown-unknown/release/public_mint_call.wasm'
 );
 
-export async function nativeNFT() {
+export async function nativeMint() {
   const sessionWasm = new Uint8Array(fs.readFileSync(MINT_SESSION_WASM).buffer);
   const casperClient = getCasperClient();
   const contract = new Contracts.Contract(casperClient);
@@ -62,6 +62,30 @@ export async function nativeNFT() {
     (20 * 1e9).toString(),
     User1Keypair.publicKey,
     NETWORK,
+    [User1Keypair]
+  );
+
+  const deployHash = await casperClient.putDeploy(deploy);
+  console.log('deployHash', deployHash);
+}
+
+export async function cep18Mint() {
+  const casperClient = getCasperClient();
+  const contract = getMinterContract();
+
+  const runtimeArguments = RuntimeArgs.fromMap({
+    nft_owner: accHashToKey(User1Keypair.publicKey.toAccountHashStr()),
+    count: CLValueBuilder.u64(2),
+    allower: accHashToKey(User1Keypair.publicKey.toAccountHashStr()),
+    cep18_package_hash: hashToKey(WETH_CONTRACT.packageHash),
+  });
+
+  const deploy = contract.callEntrypoint(
+    'cep18_mint',
+    runtimeArguments,
+    User1Keypair.publicKey,
+    NETWORK,
+    (20 * 1e9).toString(),
     [User1Keypair]
   );
 

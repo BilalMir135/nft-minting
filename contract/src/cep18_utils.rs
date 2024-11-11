@@ -1,5 +1,5 @@
 use casper_contract::{contract_api::runtime, unwrap_or_revert::UnwrapOrRevert};
-use casper_types::{ContractPackageHash, Key, U256, RuntimeArgs, URef, runtime_args};
+use casper_types::{ContractPackageHash, Key, U256, RuntimeArgs, runtime_args};
 
 use crate::data;
 use crate::error::Error;

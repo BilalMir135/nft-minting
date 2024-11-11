@@ -13,6 +13,13 @@ pub fn only_admin(caller: Key) -> Result<(), Error> {
     Ok(())
 }
 
+pub fn mint_allowed() -> Result<(), Error> {
+    if !data::get_allow_mint() {
+        return Err(Error::MintNotAllowed);
+    }
+    Ok(())
+}
+
 pub fn limited_mint(nft_owner: Key, count: u64) -> Result<(), Error> {
     let mut owner_holding = cep78_utils::balance_of(nft_owner);
     owner_holding += count;

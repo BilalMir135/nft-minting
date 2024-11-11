@@ -9,6 +9,7 @@ pub const NAMED_KEY_CEP78_PACKAGE_HASH: &str = "cep78_package_hash";
 pub const NAMED_KEY_MINT_COUNT: &str = "mint_count";
 pub const NAMED_KEY_WHITELIST_DICT: &str = "whitelist_dict";
 pub const NAMED_KEY_ONLY_WHITELIST: &str  = "only_whitelist";
+pub const NAMED_KEY_ALLOW_MINT: &str  = "allow_mint";
 
 pub const NAMED_KEY_MINTER_CONTRACT_HASH: &str = "minter_contract_hash";
 pub const NAMED_KEY_MINTER_CONTRACT_PACKAGE_HASH: &str = "minter_contract_package_hash";
@@ -93,4 +94,10 @@ pub fn get_only_whitelist() -> bool {
     get_key(NAMED_KEY_ONLY_WHITELIST).unwrap_or_revert()
 }
 
+pub fn set_allow_mint(allow_mint: bool) {
+    set_key(NAMED_KEY_ALLOW_MINT, allow_mint);
+}
 
+pub fn get_allow_mint() -> bool {
+    get_key(NAMED_KEY_ALLOW_MINT).unwrap_or_revert()
+}

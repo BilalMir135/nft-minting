@@ -27,6 +27,7 @@ use casper_types::{
 use contract_utils::{ContractContext, OnChainContractStorage};
 
 use contract::minter::MINTER;
+use contract::utils;
 
 #[derive(Default)]
 struct Minter(OnChainContractStorage);
@@ -47,6 +48,7 @@ impl Minter {
         cep78_package_hash: Key,
         mint_fee: U256,
         only_whitelist: bool,
+        allow_mint: bool
     ) {
         MINTER::init(
             self,
@@ -54,7 +56,8 @@ impl Minter {
             fund_manager,
             cep78_package_hash,
             mint_fee,
-            only_whitelist
+            only_whitelist,
+            allow_mint
         )
     }
 }
@@ -66,6 +69,7 @@ const ARG_FUND_MANAGER: &str = "fund_manager";
 const ARG_CEP78_PACKAGE_HASH: &str = "cep78_package_hash";
 const ARG_MINT_FEE: &str = "mint_fee";
 const ARG_ONLY_WHITELIST: &str = "only_whitelist";
+const ARG_ALLOW_MINT: &str = "allow_mint";
 
 const ARG_NFT_OWMER: &str = "nft_owner";
 const ARG_COUNT: &str = "count";
@@ -77,7 +81,7 @@ const ARG_WHITELIST_ACCOUNTS: &str = "whitelist_accounts";
 const ARG_WHITELIST_VALUES: &str = "whitelist_values";
 
 const ENTRY_POINT_CONSTRUCTOR: &str = "constructor";
-const ENTRY_POINT_UPDATE_ADMIN: &str = "update_admin";
+const ENTRY_POINT_SET_CONFIG: &str = "set_config";
 const ENTRY_POINT_FREE_MINT: &str = "free_mint";
 const ENTRY_POINT_NATIVE_MINT: &str = "native_mint"; 
 const ENTRY_POINT_CEP18_MINT: &str = "cep18_mint"; 
@@ -95,20 +99,33 @@ pub extern "C" fn constructor() {
     let cep78_package_hash = runtime::get_named_arg::<Key>(ARG_CEP78_PACKAGE_HASH);
     let mint_fee = runtime::get_named_arg::<U256>(ARG_MINT_FEE);
     let only_whitelist = runtime::get_named_arg::<bool>(ARG_ONLY_WHITELIST);
+    let allow_mint = runtime::get_named_arg::<bool>(ARG_ALLOW_MINT);
 
     Minter::default().constructor(
         admin, 
         fund_manager, 
         cep78_package_hash, 
         mint_fee,
-        only_whitelist
+        only_whitelist,
+        allow_mint
     );
 }
 
 #[no_mangle]
-pub extern "C" fn update_admin() {
-    let admin = runtime::get_named_arg::<Key>(ARG_ADMIN);
-    Minter::default().update_admin(admin).unwrap_or_revert();
+pub extern "C" fn set_config() {
+    let admin = utils::get_optional_named_arg::<Key>(ARG_ADMIN);
+    let fund_manager = utils::get_optional_named_arg::<Key>(ARG_FUND_MANAGER);
+    let mint_fee  = utils::get_optional_named_arg::<U256>(ARG_MINT_FEE);
+    let only_whitelist = utils::get_optional_named_arg::<bool>(ARG_ONLY_WHITELIST);
+    let allow_mint = utils::get_optional_named_arg::<bool>(ARG_ALLOW_MINT);
+
+        Minter::default().set_config(
+            admin,
+            fund_manager,
+            mint_fee,
+            only_whitelist,
+            allow_mint
+        ).unwrap_or_revert();
 }
 
 #[no_mangle]
@@ -219,14 +236,21 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new(ARG_CEP78_PACKAGE_HASH, CLType::Key),
             Parameter::new(ARG_MINT_FEE, CLType::U256),
             Parameter::new(ARG_ONLY_WHITELIST, CLType::Bool),
+            Parameter::new(ARG_ALLOW_MINT, CLType::Bool),
         ],
         CLType::Unit,
         EntryPointAccess::Groups(vec![Group::new(CONSTRUCTOR_GROUP)]),
         EntryPointType::Contract,
     ));
     entry_points.add_entry_point(EntryPoint::new(
-        ENTRY_POINT_UPDATE_ADMIN,
-        vec![Parameter::new(ARG_ADMIN, CLType::Key)],
+        ENTRY_POINT_SET_CONFIG,
+        vec![
+            Parameter::new(ARG_ADMIN, CLType::Key),
+            Parameter::new(ARG_FUND_MANAGER, CLType::Key),
+            Parameter::new(ARG_MINT_FEE, CLType::U256),
+            Parameter::new(ARG_ONLY_WHITELIST, CLType::Bool),
+            Parameter::new(ARG_ALLOW_MINT, CLType::Bool),
+        ],
         CLType::Unit,
         EntryPointAccess::Public,
         EntryPointType::Contract,
@@ -258,7 +282,7 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new(ARG_NFT_OWMER, CLType::Key),
             Parameter::new(ARG_COUNT, CLType::U64),
             Parameter::new(ARG_ALLOWER, CLType::Key),
-            Parameter::new(ARG_CEP78_PACKAGE_HASH, CLType::Key),
+            Parameter::new(ARG_CEP18_PACKAGE_HASH, CLType::Key),
         ],
         CLType::Unit,
         EntryPointAccess::Public,

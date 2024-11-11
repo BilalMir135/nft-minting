@@ -11,13 +11,14 @@ use crate::error::Error;
 use crate::modifiers;
 
 pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
-    fn init (
+    fn init(
         &self, 
         admin: Key, 
         fund_manager: Key, 
         cep78_package_hash: Key,
-        mint_fee:U256,
+        mint_fee: U256,
         only_whitelist: bool,
+        allow_mint: bool
     )  {
         data::set_admin(admin);
         data::set_fund_manager(fund_manager);
@@ -25,12 +26,34 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_mint_fee(mint_fee);
         data::set_mint_count(0u64);
         data::set_only_whitelist(only_whitelist);
+        data::set_allow_mint(allow_mint);
         Whitelist::init();
     }
 
-    fn update_admin(&self,  admin: Key) -> Result<(), Error> {
+    fn set_config(
+        &self, 
+        admin: Option<Key>,
+        fund_manager: Option<Key>, 
+        mint_fee: Option<U256>,
+        only_whitelist: Option<bool>,
+        allow_mint: Option<bool>
+    ) -> Result<(), Error> {
         modifiers::only_admin(self.get_caller())?;
-        data::set_admin(admin);
+        if let Some(admin) = admin {
+            data::set_admin(admin);
+        }
+        if let Some(fund_manager) = fund_manager {
+            data::set_fund_manager(fund_manager);
+        }
+        if let Some(mint_fee) = mint_fee {
+            data::set_mint_fee(mint_fee);
+        }
+        if let Some(only_whitelist) = only_whitelist {
+            data::set_only_whitelist(only_whitelist);
+        }
+        if let Some(allow_mint) = allow_mint {
+            data::set_allow_mint(allow_mint);
+        }
         Ok(())
     }
 
@@ -73,6 +96,7 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
     }
 
     fn native_mint(&self, nft_owner: Key, count: u64, source_purse: URef) -> Result<(), Error> {
+        modifiers::mint_allowed()?;
         modifiers::valid_account(nft_owner)?;
         modifiers::limited_mint(nft_owner, count)?;
 
@@ -91,6 +115,7 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
     }
 
     fn cep18_mint(&self, nft_owner: Key, count: u64, allower: Key, cep18_package_hash: Key) -> Result<(), Error> {
+        modifiers::mint_allowed()?;
         modifiers::valid_account(nft_owner)?;
         modifiers::limited_mint(nft_owner, count)?;
 

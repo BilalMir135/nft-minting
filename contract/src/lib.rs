@@ -8,3 +8,4 @@ pub mod error;
 pub mod event;
 pub mod minter;
 pub mod modifiers;
+pub mod utils;
