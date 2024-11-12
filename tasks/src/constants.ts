@@ -1,6 +1,6 @@
 export enum Network {
   LOCAL = 'casper-net-1',
-  TEST = 'testnet',
+  TEST = 'casper-test',
   MAIN = 'casper',
 }
 
@@ -12,19 +12,25 @@ const NodeAddress: Record<Network, string> = {
 
 const CEP78Contract = {
   [Network.LOCAL]: {
-    contractHash: 'hash-402f7a7bcfa987099ce9370ad5ea89161b8627c4aa8087a03322588800b3ea88',
-    packageHash: 'hash-438de486927a8d3e32ef06b33f5c29e6aa7432e10fc9d557ed4675fabd257b1f',
+    contractHash: 'hash-392a143b1bd55e077d41a8d45f7c353441dd1395c3e4b9c2cfee2d019dfbbb0e',
+    packageHash: 'hash-d1f847493d95a6c887c6a4c8d1ddd53a0b42d73eb9f37e18f29b3323bf9bc94a',
   },
-  [Network.TEST]: { contractHash: '', packageHash: '' },
+  [Network.TEST]: {
+    contractHash: 'hash-1094f747e47bfe9fbab68c042411c2f381cd834b02515a3433ac0f38ff9677c9',
+    packageHash: 'hash-4c4e1298ca4dc7bb99a36b43bc8ab6333a083fe91b0549dbb4b0e1b004fa1c38',
+  },
   [Network.MAIN]: { contractHash: '', packageHash: '' },
 };
 
 const MinterContract = {
   [Network.LOCAL]: {
-    contractHash: 'hash-e7e8e3aa60391a37784cea7843c18c00a8c9c8dd130d892d02b2699638d85071',
-    packageHash: 'hash-1a8a62ea3968723e8ee2e6ab6db09e6c23e66184533a1db1a5af130a6a968549',
+    contractHash: 'hash-07791f54a0a7e7211f062316c445825d2b51d382c76fc3f782ba18186b235d7e',
+    packageHash: 'hash-560609403338e375b608bfb9373879cc89449d9312d1a3e6647b62430ce3e9e5',
   },
-  [Network.TEST]: { contractHash: '', packageHash: '' },
+  [Network.TEST]: {
+    contractHash: 'hash-955209e117da90eb653c95252e90dcd212f6e60d6cb94b78decf76c247dfd995',
+    packageHash: 'hash-4f6c75d280bb823da4bce3b13569de2acaace0d6e98a527a1ca41eef97b4762d',
+  },
   [Network.MAIN]: { contractHash: '', packageHash: '' },
 };
 

@@ -1,39 +1,15 @@
-import { CEP78Client, ConfigurableVariables } from 'casper-cep78-js-client';
-import { BigNumber } from '@ethersproject/bignumber';
-
 import { CustomCEP78Client } from './client';
-import { AdmainKeypair, User1Keypair } from '../accounts';
+import { AdminKeypair, User1Keypair } from '../accounts';
 import { NODE_ADDRESS, NETWORK, CEP78_CONTRACT, MINTER_CONTRACT } from '../constants';
 import { HashType } from '../utils/input';
 
 const cep78Client = new CustomCEP78Client(NODE_ADDRESS, NETWORK);
 cep78Client.setContractHash(CEP78_CONTRACT.contractHash, CEP78_CONTRACT.packageHash);
 
-export async function mint() {
-  const mintDeploy = cep78Client.mint(
-    {
-      collectionName: 'Test Collection',
-      owner: User1Keypair.publicKey,
-      meta: {
-        name: 'John Doe',
-        symbol: 'abc',
-        token_uri: 'https://www.barfoo.com',
-      },
-    },
-    { useSessionCode: true },
-    (6 * 1e9).toString(),
-    AdmainKeypair.publicKey,
-    [AdmainKeypair]
-  );
-
-  const deployHash = await mintDeploy.send(NODE_ADDRESS);
-  console.log('deployHash', deployHash);
-}
-
 //caller => only installer
 export async function addNewAclWhitelist() {
   const aclWhitelist = [
-    { type: HashType.ACCOUNT, hash: AdmainKeypair.publicKey.toAccountHashStr() },
+    { type: HashType.ACCOUNT, hash: AdminKeypair.publicKey.toAccountHashStr() },
     { type: HashType.CONTRACT, hash: MINTER_CONTRACT.packageHash },
     { type: HashType.CONTRACT, hash: MINTER_CONTRACT.contractHash },
   ];
@@ -43,46 +19,81 @@ export async function addNewAclWhitelist() {
       aclWhitelist,
     },
     (6 * 1e9).toString(),
-    User1Keypair.publicKey,
-    [User1Keypair]
+    AdminKeypair.publicKey,
+    [AdminKeypair]
   );
 
   const deployHash = await aclDeploy.send(NODE_ADDRESS);
   console.log('deployHash', deployHash);
 }
 
-export async function registerOwner() {
-  const deploy = cep78Client.register(
-    { tokenOwner: AdmainKeypair.publicKey },
-    (6 * 1e9).toString(),
-    AdmainKeypair.publicKey,
-    [AdmainKeypair]
-  );
+export async function readCep78Contract() {
+  const [
+    collectionName,
+    collectionSymbol,
+    allowMintingConfig,
+    burnModeConfig,
+    holderModeConfig,
+    identifierModeConfig,
+    JSONSchemaConfig,
+    metadataKindConfig,
+    metadataMutabilityConfig,
+    NFTKindConfig,
+    ownershipModeConfig,
+    whitelistModeConfig,
+    numOfMintedTokens,
+    tokenTotalSupply,
+  ] = await Promise.all([
+    cep78Client.collectionName(),
+    cep78Client.collectionSymbol(),
+    cep78Client.getAllowMintingConfig(),
+    cep78Client.getBurnModeConfig(),
+    cep78Client.getHolderModeConfig(),
+    cep78Client.getIdentifierModeConfig(),
+    cep78Client.getJSONSchemaConfig(),
+    cep78Client.getMetadataKindConfig(),
+    cep78Client.getMetadataMutabilityConfig(),
+    cep78Client.getNFTKindConfig(),
+    cep78Client.getOwnershipModeConfig(),
+    cep78Client.getWhitelistModeConfig(),
+    cep78Client.numOfMintedTokens(),
+    cep78Client.tokenTotalSupply(),
+  ]);
 
-  const deployHash = await deploy.send(NODE_ADDRESS);
-  console.log('deployHash', deployHash);
+  console.log({
+    collectionName,
+    collectionSymbol,
+    allowMintingConfig,
+    burnModeConfig,
+    holderModeConfig,
+    identifierModeConfig,
+    JSONSchemaConfig,
+    metadataKindConfig,
+    metadataMutabilityConfig,
+    NFTKindConfig,
+    ownershipModeConfig,
+    whitelistModeConfig,
+    numOfMintedTokens: numOfMintedTokens.toString(),
+    tokenTotalSupply: tokenTotalSupply.toString(),
+  });
 }
 
-export async function readCep78Contract() {
-  const isAccountWhitelisted = await cep78Client.isAccountWhitelisted(AdmainKeypair.publicKey);
-  console.log('isAccountWhitelisted', isAccountWhitelisted);
+export async function nftDataByAccount() {
+  const [balance, owner, metadata] = await Promise.all([
+    cep78Client.getBalanceOf(User1Keypair.publicKey),
+    cep78Client.getOwnerOf('0'),
+    cep78Client.getMetadataOf('0'),
+  ]);
 
-  const isContractWhitelisted = await cep78Client.isContractWhitelisted(
-    MINTER_CONTRACT.packageHash
-  );
-  console.log('isContractWhitelisted', isContractWhitelisted);
+  console.log({ balance, owner, metadata });
+}
 
-  const totalMints: BigNumber = await cep78Client.numOfMintedTokens();
-  console.log('totalMints', totalMints.toString());
+export async function whitelistData() {
+  const [admin, user1, minterContract] = await Promise.all([
+    cep78Client.isAccountWhitelisted(AdminKeypair.publicKey),
+    cep78Client.isAccountWhitelisted(User1Keypair.publicKey),
+    cep78Client.isContractWhitelisted(MINTER_CONTRACT.packageHash),
+  ]);
 
-  const balance = await cep78Client.getBalanceOf(User1Keypair.publicKey);
-  console.log('balance', balance);
-
-  const ownerOf = await cep78Client.getOwnerOf('0');
-  console.log('ownerOf', ownerOf);
-
-  const metdatda = await cep78Client.getMetadataOf('1');
-  console.log('metdatda', metdatda);
-
-  console.log('ah =>', User1Keypair.publicKey.toAccountHashStr());
+  console.log({ admin, user1, minterContract });
 }

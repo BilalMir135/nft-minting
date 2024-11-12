@@ -15,19 +15,19 @@ import {
 import path from 'path';
 import fs from 'fs';
 
-import { User1Keypair } from '../accounts';
+import { AdminKeypair } from '../accounts';
 import { NODE_ADDRESS, NETWORK } from '../constants';
 
 const CEP78_CONTRACT_WASM = path.resolve(__dirname, './contract/contract.wasm');
+const contractWasm = new Uint8Array(fs.readFileSync(CEP78_CONTRACT_WASM).buffer);
 
 const cep78Client = new CEP78Client(NODE_ADDRESS, NETWORK);
-const contractWasm = new Uint8Array(fs.readFileSync(CEP78_CONTRACT_WASM).buffer);
 
 export async function installCep78() {
   const installDeploy = cep78Client.install(
     {
-      collectionName: 'Test Collection',
-      collectionSymbol: 'TC-01',
+      collectionName: 'BoredApeYachtClub',
+      collectionSymbol: 'BAYC',
       totalTokenSupply: '10000',
       ownershipMode: NFTOwnershipMode.Transferable,
       nftKind: NFTKind.Digital,
@@ -42,8 +42,8 @@ export async function installCep78() {
       eventsMode: EventsMode.CES,
     },
     (600 * 1e9).toString(),
-    User1Keypair.publicKey,
-    [User1Keypair],
+    AdminKeypair.publicKey,
+    [AdminKeypair],
     contractWasm
   );
 

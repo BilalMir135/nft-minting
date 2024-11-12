@@ -2,15 +2,9 @@ import { CEP18Client } from 'casper-cep18-js-client';
 import { CLValueBuilder } from 'casper-js-sdk';
 import { BigNumber } from '@ethersproject/bignumber';
 
-import { AdmainKeypair, User1Keypair } from '../accounts';
-import {
-  NODE_ADDRESS,
-  NETWORK,
-  CEP78_CONTRACT,
-  MINTER_CONTRACT,
-  WETH_CONTRACT,
-} from '../constants';
-import { HashType, hashToKey, hashToUnit8Array } from '../utils/input';
+import { AdminKeypair, User1Keypair } from '../accounts';
+import { NODE_ADDRESS, NETWORK, MINTER_CONTRACT, WETH_CONTRACT } from '../constants';
+import { HashType, hashToUnit8Array } from '../utils/input';
 
 const cep18Client = new CEP18Client(NODE_ADDRESS, NETWORK);
 cep18Client.setContractHash(WETH_CONTRACT.contractHash as any, WETH_CONTRACT.packageHash as any);
@@ -54,6 +48,6 @@ export async function readCep18Contract() {
   const user1Balance: BigNumber = await cep18Client.balanceOf(User1Keypair.publicKey);
   console.log('user1Balance', user1Balance.toString());
 
-  const adminBalance: BigNumber = await cep18Client.balanceOf(AdmainKeypair.publicKey);
+  const adminBalance: BigNumber = await cep18Client.balanceOf(AdminKeypair.publicKey);
   console.log('adminBalance', adminBalance.toString());
 }
