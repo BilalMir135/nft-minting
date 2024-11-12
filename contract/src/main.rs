@@ -180,6 +180,7 @@ pub extern "C" fn call() {
     let cep78_package_hash = runtime::get_named_arg::<Key>(ARG_CEP78_PACKAGE_HASH);
     let mint_fee = runtime::get_named_arg::<U256>(ARG_MINT_FEE);
     let only_whitelist = runtime::get_named_arg::<bool>(ARG_ONLY_WHITELIST);
+    let allow_mint = runtime::get_named_arg::<bool>(ARG_ALLOW_MINT);
 
     let (contract_hash, _) = storage::new_contract(
         get_entry_points(),
@@ -202,7 +203,8 @@ pub extern "C" fn call() {
         ARG_FUND_MANAGER => fund_manager,
         ARG_CEP78_PACKAGE_HASH => cep78_package_hash,
         ARG_MINT_FEE => mint_fee,
-        ARG_ONLY_WHITELIST => only_whitelist
+        ARG_ONLY_WHITELIST => only_whitelist,
+        ARG_ALLOW_MINT => allow_mint
     };
 
     let constructor_access: URef =

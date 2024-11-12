@@ -14,9 +14,9 @@ fn get_cep78_package_hash() -> ContractPackageHash {
 
 fn generate_metadata(count: u64) -> String {
     format!(r#"{{ 
-        "name": "John Doe", 
-        "symbol": "abc", 
-        "token_uri": "https://www.barfoo.com/{}" 
+        "name": "BoredApeYachtClub", 
+        "symbol": "BAYC", 
+        "token_uri": "ipfs://QmeSjSinHpPnmXmspMjwiXyN6zS4E9zccariGR3jxcaWtq/{}" 
     }}"#, count)
 }
 
