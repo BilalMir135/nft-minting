@@ -20,8 +20,8 @@ function toMotes(csprs: number) {
 
 export const GAS = {
   INSTALL: toMotes(140),
-  FREE_MINT: toMotes(20),
-  NATIVE_MINT: toMotes(20),
+  FREE_MINT: toMotes(10000),
+  NATIVE_MINT: toMotes(85),
   SET_WHITELIST: toMotes(2),
   SET_CONFIG: toMotes(20),
 };

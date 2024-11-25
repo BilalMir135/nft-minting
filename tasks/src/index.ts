@@ -1,7 +1,9 @@
 import { config } from 'dotenv';
 config();
 
-import { installMinterContract } from './minter/install';
+import fs from 'fs';
+
+import { installMinterContract, upgradeMinterContract } from './minter/install';
 import {
   freeMint,
   setConfig,
@@ -19,20 +21,25 @@ import {
   nftDataByAccount,
 } from './cep78/actions';
 
+import { MINT_SESSION_WASM } from './minter/client/utils';
+
 async function main() {
   //cep78
   // await installCep78();
   // await addNewAclWhitelist();
-  // await readCep78Contract();
+  await readCep78Contract();
   // await whitelistData();
   // await nftDataByAccount();
   //minter
   // await installMinterContract();
+  // await upgradeMinterContract();
   // await setWhitelist();
   // await setConfig();
-  await nativeMint();
-  // await readMinterContract();
+  // await nativeMint();
+  // await freeMint();
+  await readMinterContract();
   // await isAccWhitelistedToMint();
+  // console.log(MINT_SESSION_WASM);
 }
 
 main();

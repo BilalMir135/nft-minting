@@ -7,25 +7,28 @@ export enum Network {
 const NodeAddress: Record<Network, string> = {
   [Network.LOCAL]: 'http://localhost:11101',
   [Network.TEST]: `https://testnet.casper.validationcloud.io/v1/${process.env.VALIDATION_CLOUD_KEY}`,
-  [Network.MAIN]: ``,
+  [Network.MAIN]: `https://mainnet.casper.validationcloud.io/v1/${process.env.VALIDATION_CLOUD_KEY_MAIN}`,
 };
 
 const CEP78Contract = {
   [Network.LOCAL]: {
-    contractHash: 'hash-392a143b1bd55e077d41a8d45f7c353441dd1395c3e4b9c2cfee2d019dfbbb0e',
-    packageHash: 'hash-d1f847493d95a6c887c6a4c8d1ddd53a0b42d73eb9f37e18f29b3323bf9bc94a',
+    contractHash: 'hash-100f84e65b6918d896c5fc45870551e5373663107dc361e3356ac6997a3e7700',
+    packageHash: 'hash-8f86deb1ac694d81270becf7301f4f073704b133acbf0561f2fe6278aa813a3c',
   },
   [Network.TEST]: {
     contractHash: 'hash-1094f747e47bfe9fbab68c042411c2f381cd834b02515a3433ac0f38ff9677c9',
     packageHash: 'hash-4c4e1298ca4dc7bb99a36b43bc8ab6333a083fe91b0549dbb4b0e1b004fa1c38',
   },
-  [Network.MAIN]: { contractHash: '', packageHash: '' },
+  [Network.MAIN]: {
+    contractHash: 'hash-9181c48193d9630144906428a91c63bef12817836aed1f33332a72803c9a1795',
+    packageHash: 'hash-ad0cd4ef3cfd9e7222706786e51773af771f063ecce4606282999a7a6d6ac495',
+  },
 };
 
 const MinterContract = {
   [Network.LOCAL]: {
-    contractHash: 'hash-07791f54a0a7e7211f062316c445825d2b51d382c76fc3f782ba18186b235d7e',
-    packageHash: 'hash-560609403338e375b608bfb9373879cc89449d9312d1a3e6647b62430ce3e9e5',
+    contractHash: 'hash-1b349329cda30830cb64564c1ee534c6dfe58c8e149886f3541c6c6f547c25fd',
+    packageHash: 'hash-fafd7ffb4edccaa4565192075ac81fdeeffe8690636e2ef211f4cc1a28a64725',
   },
   [Network.TEST]: {
     contractHash: 'hash-955209e117da90eb653c95252e90dcd212f6e60d6cb94b78decf76c247dfd995',

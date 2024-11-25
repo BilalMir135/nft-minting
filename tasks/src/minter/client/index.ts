@@ -12,7 +12,14 @@ import {
 } from 'casper-js-sdk';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 
-import { InstallArg, FreeMintArgs, NativeMintArgs, SetWhitelistArgs, SetConfigArgs } from './types';
+import {
+  InstallArg,
+  UpgradeArg,
+  FreeMintArgs,
+  NativeMintArgs,
+  SetWhitelistArgs,
+  SetConfigArgs,
+} from './types';
 import { MINTER_CONTRACT_WASM, MINT_SESSION_WASM, GAS } from './utils';
 import { accHashToKey, hashToKey } from '../../utils/input';
 
@@ -41,6 +48,25 @@ export class MinterClient {
       mint_fee: CLValueBuilder.u256(args.mintFee),
       only_whitelist: CLValueBuilder.bool(args.onlyWhitelist),
       allow_mint: CLValueBuilder.bool(args.allowMint),
+      max_mint: CLValueBuilder.u64(args.max_mint),
+      name: CLValueBuilder.string('New'),
+      disable_old: CLValueBuilder.bool(false),
+    });
+
+    return this.contractClient.install(
+      MINTER_CONTRACT_WASM,
+      runtimeArgs,
+      GAS.INSTALL,
+      deploySender,
+      this.networkName,
+      keys
+    );
+  }
+
+  public upgrade(args: UpgradeArg, deploySender: CLPublicKey, keys: Keys.AsymmetricKey[]) {
+    const runtimeArgs = RuntimeArgs.fromMap({
+      name: CLValueBuilder.string('APOC'),
+      disable_old: CLValueBuilder.bool(args.disableOld),
     });
 
     return this.contractClient.install(
@@ -74,6 +100,10 @@ export class MinterClient {
 
     if (args.allowMint) {
       runtimeArgs.insert('allow_mint', CLValueBuilder.bool(args.allowMint));
+    }
+
+    if (args.maxMint) {
+      runtimeArgs.insert('max_mint', CLValueBuilder.u64(args.maxMint));
     }
 
     return this.contractClient.callEntrypoint(
@@ -177,6 +207,10 @@ export class MinterClient {
 
   public mintCount(): Promise<BigNumber> {
     return this.contractClient.queryContractData(['mint_count']);
+  }
+
+  public maxMint(): Promise<BigNumber> {
+    return this.contractClient.queryContractData(['max_mint']);
   }
 
   public onlyWhitelist(): Promise<Boolean> {

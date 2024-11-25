@@ -43,6 +43,7 @@ export async function readCep78Contract() {
     whitelistModeConfig,
     numOfMintedTokens,
     tokenTotalSupply,
+    reportingMode,
   ] = await Promise.all([
     cep78Client.collectionName(),
     cep78Client.collectionSymbol(),
@@ -58,6 +59,7 @@ export async function readCep78Contract() {
     cep78Client.getWhitelistModeConfig(),
     cep78Client.numOfMintedTokens(),
     cep78Client.tokenTotalSupply(),
+    cep78Client.getReportingModeConfig(),
   ]);
 
   console.log({
@@ -75,6 +77,7 @@ export async function readCep78Contract() {
     whitelistModeConfig,
     numOfMintedTokens: numOfMintedTokens.toString(),
     tokenTotalSupply: tokenTotalSupply.toString(),
+    reportingMode,
   });
 }
 
@@ -82,7 +85,7 @@ export async function nftDataByAccount() {
   const [balance, owner, metadata] = await Promise.all([
     cep78Client.getBalanceOf(User1Keypair.publicKey),
     cep78Client.getOwnerOf('0'),
-    cep78Client.getMetadataOf('0'),
+    cep78Client.getMetadataOf('9'),
   ]);
 
   console.log({ balance, owner, metadata });

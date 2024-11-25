@@ -7,6 +7,11 @@ export type InstallArg = {
   mintFee: BigNumberish;
   onlyWhitelist: boolean;
   allowMint: boolean;
+  max_mint: BigNumberish;
+};
+
+export type UpgradeArg = {
+  disableOld: boolean;
 };
 
 export type SetConfigArgs = {
@@ -15,6 +20,7 @@ export type SetConfigArgs = {
   mintFee?: BigNumberish;
   onlyWhitelist?: boolean;
   allowMint?: boolean;
+  maxMint?: BigNumberish;
 };
 
 export type FreeMintArgs = {
