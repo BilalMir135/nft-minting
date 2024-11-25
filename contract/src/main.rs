@@ -11,7 +11,7 @@ use alloc::{
     vec::Vec, 
     collections::BTreeSet, 
     format, 
-    string::{String, ToString}
+    string::String
 };
 
 use casper_contract::{
@@ -19,8 +19,8 @@ use casper_contract::{
     unwrap_or_revert::UnwrapOrRevert,
 };
 use casper_types::{
-    runtime_args, CLType, CLValue, 
-    ContractPackageHash, EntryPoint, EntryPointAccess, 
+    runtime_args, contracts::NamedKeys, CLType, CLValue,
+    ContractPackageHash, ContractHash, EntryPoint, EntryPointAccess, 
     EntryPointType, EntryPoints, 
     Group, Key, Parameter, RuntimeArgs, URef, U256
 };
@@ -28,6 +28,7 @@ use contract_utils::{ContractContext, OnChainContractStorage};
 
 use contract::minter::MINTER;
 use contract::utils;
+use contract::error::Error;
 
 #[derive(Default)]
 struct Minter(OnChainContractStorage);
@@ -48,7 +49,8 @@ impl Minter {
         cep78_package_hash: Key,
         mint_fee: U256,
         only_whitelist: bool,
-        allow_mint: bool
+        allow_mint: bool,
+        max_mint: u64
     ) {
         MINTER::init(
             self,
@@ -57,12 +59,16 @@ impl Minter {
             cep78_package_hash,
             mint_fee,
             only_whitelist,
-            allow_mint
+            allow_mint,
+            max_mint
         )
     }
 }
 
 const CONSTRUCTOR_GROUP: &str = "constructor";
+
+const ARG_NAME: &str = "name";
+const ARG_DISABLE_OLD: &str = "disable_old";
 
 const ARG_ADMIN: &str = "admin";
 const ARG_FUND_MANAGER: &str = "fund_manager";
@@ -70,6 +76,7 @@ const ARG_CEP78_PACKAGE_HASH: &str = "cep78_package_hash";
 const ARG_MINT_FEE: &str = "mint_fee";
 const ARG_ONLY_WHITELIST: &str = "only_whitelist";
 const ARG_ALLOW_MINT: &str = "allow_mint";
+const ARG_MAX_MINT: &str = "max_mint";
 
 const ARG_NFT_OWMER: &str = "nft_owner";
 const ARG_COUNT: &str = "count";
@@ -89,8 +96,10 @@ const ENTRY_POINT_SET_WHITELIST: &str = "set_whitelist";
 const ENTRY_POINT_RESET_WHITELIST: &str = "reset_whitelist";
 const ENTRY_POINT_GET_MINT_COST: &str = "get_mint_cost";
 
-const NAMED_KEY_MINTER_CONTRACT_HASH: &str = "minter_contract_hash";
-const NAMED_KEY_MINTER_CONTRACT_PACKAGE_HASH: &str = "minter_contract_package_hash";
+const NAMED_KEY_PACKAGE_HASH_PREFIX: &str = "minter_contract_package_hash";
+const NAMED_KEY_ACCESS_UREF_PREFIX: &str = "minter_contract_access";
+const NAMED_KEY_CONTRACT_HASH_PREFIX: &str = "minter_contract_hash";
+const NAMED_KEY_CONTRACT_VERSION: &str = "minter_contract_version"; 
 
 #[no_mangle]
 pub extern "C" fn constructor() {
@@ -100,6 +109,7 @@ pub extern "C" fn constructor() {
     let mint_fee = runtime::get_named_arg::<U256>(ARG_MINT_FEE);
     let only_whitelist = runtime::get_named_arg::<bool>(ARG_ONLY_WHITELIST);
     let allow_mint = runtime::get_named_arg::<bool>(ARG_ALLOW_MINT);
+    let max_mint = runtime::get_named_arg::<u64>(ARG_MAX_MINT);
 
     Minter::default().constructor(
         admin, 
@@ -107,7 +117,8 @@ pub extern "C" fn constructor() {
         cep78_package_hash, 
         mint_fee,
         only_whitelist,
-        allow_mint
+        allow_mint,
+        max_mint
     );
 }
 
@@ -118,13 +129,15 @@ pub extern "C" fn set_config() {
     let mint_fee  = utils::get_optional_named_arg::<U256>(ARG_MINT_FEE);
     let only_whitelist = utils::get_optional_named_arg::<bool>(ARG_ONLY_WHITELIST);
     let allow_mint = utils::get_optional_named_arg::<bool>(ARG_ALLOW_MINT);
+    let max_mint = utils::get_optional_named_arg::<u64>(ARG_MAX_MINT);
 
         Minter::default().set_config(
             admin,
             fund_manager,
             mint_fee,
             only_whitelist,
-            allow_mint
+            allow_mint,
+            max_mint
         ).unwrap_or_revert();
 }
 
@@ -172,61 +185,6 @@ pub extern "C" fn get_mint_cost() {
     let mint_cost = Minter::default().get_mint_cost(count);
     runtime::ret(CLValue::from_t(mint_cost).unwrap());
 }
-
-#[no_mangle]
-pub extern "C" fn call() {
-    let admin = runtime::get_named_arg::<Key>(ARG_ADMIN);
-    let fund_manager = runtime::get_named_arg::<Key>(ARG_FUND_MANAGER);
-    let cep78_package_hash = runtime::get_named_arg::<Key>(ARG_CEP78_PACKAGE_HASH);
-    let mint_fee = runtime::get_named_arg::<U256>(ARG_MINT_FEE);
-    let only_whitelist = runtime::get_named_arg::<bool>(ARG_ONLY_WHITELIST);
-    let allow_mint = runtime::get_named_arg::<bool>(ARG_ALLOW_MINT);
-
-    let (contract_hash, _) = storage::new_contract(
-        get_entry_points(),
-        None,
-        Some(String::from(NAMED_KEY_MINTER_CONTRACT_PACKAGE_HASH)),
-        None,
-    );
-
-    let package_hash: ContractPackageHash = ContractPackageHash::new(
-        runtime::get_key(NAMED_KEY_MINTER_CONTRACT_PACKAGE_HASH)
-            .unwrap_or_revert()
-            .into_hash()
-            .unwrap_or_revert(),
-    );
-
-    // let package_hash_key: Key = package_hash.into();
-
-    let init_args = runtime_args! {
-        ARG_ADMIN => admin,
-        ARG_FUND_MANAGER => fund_manager,
-        ARG_CEP78_PACKAGE_HASH => cep78_package_hash,
-        ARG_MINT_FEE => mint_fee,
-        ARG_ONLY_WHITELIST => only_whitelist,
-        ARG_ALLOW_MINT => allow_mint
-    };
-
-    let constructor_access: URef =
-    storage::create_contract_user_group(package_hash, CONSTRUCTOR_GROUP, 1, Default::default())
-        .unwrap_or_revert()
-        .pop()
-        .unwrap_or_revert();
-
-    let _: () = runtime::call_contract(contract_hash, ENTRY_POINT_CONSTRUCTOR, init_args);
-
-    let mut urefs = BTreeSet::new();
-    urefs.insert(constructor_access);
-    storage::remove_contract_user_group_urefs(package_hash, CONSTRUCTOR_GROUP, urefs)
-        .unwrap_or_revert();
-
-    runtime::put_key(NAMED_KEY_MINTER_CONTRACT_HASH, contract_hash.into());
-    // runtime::put_key(
-    //     &format!("{contract_hash}_contract_hash_wrapped"),
-    //     storage::new_uref(contract_hash).into(),
-    // );
-}
-
 
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
@@ -320,4 +278,108 @@ fn get_entry_points() -> EntryPoints {
         EntryPointType::Contract,
     ));
     entry_points
+}
+
+fn install_contract(name: &str) {
+    let admin = runtime::get_named_arg::<Key>(ARG_ADMIN);
+    let fund_manager = runtime::get_named_arg::<Key>(ARG_FUND_MANAGER);
+    let cep78_package_hash = runtime::get_named_arg::<Key>(ARG_CEP78_PACKAGE_HASH);
+    let mint_fee = runtime::get_named_arg::<U256>(ARG_MINT_FEE);
+    let only_whitelist = runtime::get_named_arg::<bool>(ARG_ONLY_WHITELIST);
+    let allow_mint = runtime::get_named_arg::<bool>(ARG_ALLOW_MINT);
+    let max_mint = runtime::get_named_arg::<u64>(ARG_MAX_MINT);
+
+    let package_hash_key_name = format!("{NAMED_KEY_PACKAGE_HASH_PREFIX}_{name}");
+    let access_uref_key_name = format!("{NAMED_KEY_ACCESS_UREF_PREFIX}_{name}");
+    let (contract_hash, contract_version) = storage::new_contract(
+        get_entry_points(),
+        None,
+        Some(package_hash_key_name.clone()),
+        Some(access_uref_key_name.clone()),
+    );
+
+    let package_hash = runtime::get_key(&package_hash_key_name)
+        .unwrap_or_revert()
+        .into_hash()
+        .map(ContractPackageHash::new)
+        .unwrap_or_revert();
+
+    let init_args = runtime_args! {
+        ARG_ADMIN => admin,
+        ARG_FUND_MANAGER => fund_manager,
+        ARG_CEP78_PACKAGE_HASH => cep78_package_hash,
+        ARG_MINT_FEE => mint_fee,
+        ARG_ONLY_WHITELIST => only_whitelist,
+        ARG_ALLOW_MINT => allow_mint,
+        ARG_MAX_MINT => max_mint,
+    };
+    let constructor_access: URef =
+    storage::create_contract_user_group(package_hash, CONSTRUCTOR_GROUP, 1, Default::default())
+        .unwrap_or_revert()
+        .pop()
+        .unwrap_or_revert();
+
+    let _: () = runtime::call_contract(contract_hash, ENTRY_POINT_CONSTRUCTOR, init_args);
+    let mut urefs = BTreeSet::new();
+    urefs.insert(constructor_access);
+    storage::remove_contract_user_group_urefs(package_hash, CONSTRUCTOR_GROUP, urefs)
+        .unwrap_or_revert();
+
+    runtime::put_key(
+        &format!("{NAMED_KEY_CONTRACT_HASH_PREFIX}_{name}"),
+        contract_hash.into(),
+    );
+    runtime::put_key(
+        &format!("{NAMED_KEY_CONTRACT_VERSION}_{name}"),
+        storage::new_uref(contract_version).into(),
+    );
+    }
+
+fn upgrade_contract(name: &str, disable_old: bool) {
+    let contract_package_hash = runtime::get_key(&format!("{NAMED_KEY_PACKAGE_HASH_PREFIX}_{name}"))
+        .unwrap_or_revert()
+        .into_hash()
+        .map(ContractPackageHash::new)
+        .unwrap_or_revert_with(Error::MissingPackageHashForUpgrade);
+
+    let previous_contract_hash = runtime::get_key(&format!("{NAMED_KEY_CONTRACT_HASH_PREFIX}_{name}"))
+        .unwrap_or_revert()
+        .into_hash()
+        .map(ContractHash::new)
+        .unwrap_or_revert_with(Error::MissingContractHashForUpgrade);
+
+    let (contract_hash, contract_version) = storage::add_contract_version(
+        contract_package_hash,
+        get_entry_points(),
+        NamedKeys::new()
+    );
+
+    if disable_old {
+        storage::disable_contract_version(contract_package_hash, previous_contract_hash)
+            .unwrap_or_revert();
+    }
+
+    runtime::put_key(
+        &format!("{NAMED_KEY_CONTRACT_HASH_PREFIX}_{name}"),
+        contract_hash.into(),
+    );
+    runtime::put_key(
+        &format!("{NAMED_KEY_CONTRACT_VERSION}_{name}"),
+        storage::new_uref(contract_version).into(),
+    );
+}
+
+#[no_mangle]
+pub extern "C" fn call() {
+    let name = runtime::get_named_arg::<String>(ARG_NAME);
+    let disable_old = runtime::get_named_arg::<bool>(ARG_DISABLE_OLD);
+
+    match runtime::get_key(&format!("{NAMED_KEY_ACCESS_UREF_PREFIX}_{name}")) {
+        Some(_) => {
+            upgrade_contract(&name, disable_old);
+        }
+        None => {
+            install_contract(&name);
+        }
+    }
 }

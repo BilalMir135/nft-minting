@@ -16,7 +16,9 @@ pub enum Error {
     UableToReadPurse = 9,
     NotEnoughBalance = 10,
     InvalidAccountHash = 11,
-    MintNotAllowed = 12
+    MintNotAllowed = 12,
+    MissingPackageHashForUpgrade = 13,
+    MissingContractHashForUpgrade = 14
 }
 
 impl From<Error> for ApiError {

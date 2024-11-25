@@ -23,7 +23,7 @@ pub fn mint_allowed() -> Result<(), Error> {
 pub fn limited_mint(nft_owner: Key, count: u64) -> Result<(), Error> {
     let mut owner_holding = cep78_utils::balance_of(nft_owner);
     owner_holding += count;
-    if owner_holding > 20 {
+    if owner_holding > data::get_max_mint() {
         return Err(Error::MintLimitExceed);
     }
     Ok(())

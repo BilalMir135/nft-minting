@@ -18,7 +18,8 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
         cep78_package_hash: Key,
         mint_fee: U256,
         only_whitelist: bool,
-        allow_mint: bool
+        allow_mint: bool,
+        max_mint: u64
     )  {
         data::set_admin(admin);
         data::set_fund_manager(fund_manager);
@@ -27,6 +28,7 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
         data::set_mint_count(0u64);
         data::set_only_whitelist(only_whitelist);
         data::set_allow_mint(allow_mint);
+        data::set_max_mint(max_mint);
         Whitelist::init();
     }
 
@@ -36,7 +38,8 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
         fund_manager: Option<Key>, 
         mint_fee: Option<U256>,
         only_whitelist: Option<bool>,
-        allow_mint: Option<bool>
+        allow_mint: Option<bool>,
+        max_mint: Option<u64>,
     ) -> Result<(), Error> {
         modifiers::only_admin(self.get_caller())?;
         if let Some(admin) = admin {
@@ -53,6 +56,9 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
         }
         if let Some(allow_mint) = allow_mint {
             data::set_allow_mint(allow_mint);
+        }
+        if let Some(max_mint) = max_mint {
+            data::set_max_mint(max_mint);
         }
         Ok(())
     }
