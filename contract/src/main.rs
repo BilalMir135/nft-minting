@@ -81,8 +81,6 @@ const ARG_MAX_MINT: &str = "max_mint";
 const ARG_NFT_OWMER: &str = "nft_owner";
 const ARG_COUNT: &str = "count";
 const ARG_SOURCE_PURSE: &str = "source_purse";
-const ARG_ALLOWER: &str = "allower";
-const ARG_CEP18_PACKAGE_HASH: &str = "cep18_package_hash";
 
 const ARG_WHITELIST_ACCOUNTS: &str = "whitelist_accounts";
 const ARG_WHITELIST_VALUES: &str = "whitelist_values";
@@ -91,7 +89,6 @@ const ENTRY_POINT_CONSTRUCTOR: &str = "constructor";
 const ENTRY_POINT_SET_CONFIG: &str = "set_config";
 const ENTRY_POINT_FREE_MINT: &str = "free_mint";
 const ENTRY_POINT_NATIVE_MINT: &str = "native_mint"; 
-const ENTRY_POINT_CEP18_MINT: &str = "cep18_mint"; 
 const ENTRY_POINT_SET_WHITELIST: &str = "set_whitelist";
 const ENTRY_POINT_RESET_WHITELIST: &str = "reset_whitelist";
 const ENTRY_POINT_GET_MINT_COST: &str = "get_mint_cost";
@@ -164,15 +161,6 @@ pub extern "C" fn native_mint() {
 }
 
 #[no_mangle]
-pub extern "C" fn cep18_mint() {
-    let nft_owner = runtime::get_named_arg::<Key>(ARG_NFT_OWMER);
-    let count = runtime::get_named_arg::<u64>(ARG_COUNT);
-    let allower = runtime::get_named_arg::<Key>(ARG_ALLOWER);
-    let cep18_package_hash = runtime::get_named_arg::<Key>(ARG_CEP18_PACKAGE_HASH);
-    Minter::default().cep18_mint(nft_owner, count, allower, cep18_package_hash).unwrap_or_revert();
-}
-
-#[no_mangle]
 pub extern "C" fn reset_whitelist() {
     let accounts = runtime::get_named_arg::<Vec<Key>>(ARG_WHITELIST_ACCOUNTS);
     let values = runtime::get_named_arg::<Vec<bool>>(ARG_WHITELIST_VALUES);
@@ -231,18 +219,6 @@ fn get_entry_points() -> EntryPoints {
             Parameter::new(ARG_NFT_OWMER, CLType::Key),
             Parameter::new(ARG_COUNT, CLType::U64),
             Parameter::new(ARG_SOURCE_PURSE, CLType::URef),
-        ],
-        CLType::Unit,
-        EntryPointAccess::Public,
-        EntryPointType::Contract,
-    ));
-    entry_points.add_entry_point(EntryPoint::new(
-        ENTRY_POINT_CEP18_MINT,
-        vec![
-            Parameter::new(ARG_NFT_OWMER, CLType::Key),
-            Parameter::new(ARG_COUNT, CLType::U64),
-            Parameter::new(ARG_ALLOWER, CLType::Key),
-            Parameter::new(ARG_CEP18_PACKAGE_HASH, CLType::Key),
         ],
         CLType::Unit,
         EntryPointAccess::Public,

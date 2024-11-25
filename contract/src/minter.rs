@@ -4,7 +4,6 @@ use casper_contract::unwrap_or_revert::UnwrapOrRevert;
 use casper_types::{account::AccountHash, Key, URef, U256, U512};
 use contract_utils::{ContractStorage, ContractContext};
 
-use crate::cep18_utils;
 use crate::cep78_utils;
 use crate::data::{self, Whitelist};
 use crate::error::Error;
@@ -116,20 +115,6 @@ pub trait MINTER<Storage: ContractStorage>: ContractContext<Storage> {
             None
         ).unwrap_or_revert();
 
-        self.mint_nft(nft_owner, count)?;
-        Ok(())
-    }
-
-    fn cep18_mint(&self, nft_owner: Key, count: u64, allower: Key, cep18_package_hash: Key) -> Result<(), Error> {
-        modifiers::mint_allowed()?;
-        modifiers::valid_account(nft_owner)?;
-        modifiers::limited_mint(nft_owner, count)?;
-
-        let amount = self.get_mint_cost(count);
-        modifiers::enough_cep18_balance(amount, allower, cep18_package_hash)?;
-
-        cep18_utils::transfer_from(allower, amount, cep18_package_hash);
-        
         self.mint_nft(nft_owner, count)?;
         Ok(())
     }

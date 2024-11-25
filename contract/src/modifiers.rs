@@ -1,7 +1,6 @@
-use casper_types::{Key, URef, U256, U512};
+use casper_types::{Key, URef, U512};
 use casper_contract::{contract_api::system, unwrap_or_revert::UnwrapOrRevert};
 
-use crate::cep18_utils;
 use crate::cep78_utils;
 use crate::data::{self, Whitelist};
 use crate::error::Error;
@@ -41,14 +40,6 @@ pub fn valid_account(account: Key) -> Result<(), Error> {
 
 pub fn enough_native_balance(amount: U512, purse: URef) -> Result<(), Error> {
     let balance = system::get_purse_balance(purse).unwrap_or_revert_with(Error::UableToReadPurse);
-    if amount > balance {
-        return Err(Error::NotEnoughBalance);
-    }
-    Ok(())
-}
-
-pub fn enough_cep18_balance(amount: U256, address: Key, cep18_package_hash: Key) -> Result<(), Error> {
-    let balance = cep18_utils::balance_of(address, cep18_package_hash);
     if amount > balance {
         return Err(Error::NotEnoughBalance);
     }
