@@ -24,6 +24,30 @@ export async function setWhitelist() {
       accountHash: 'account-hash-0edef6ff850f4ca98ba4d2889a9e33d2c5b7e601a32b9aa7332299aaa69ebcbd',
       value: true,
     },
+    {
+      accountHash: 'account-hash-0852813808922eff2ffc7bd5ff639bad6d59cec694ad55b89acbf2f04bbe4c4c',
+      value: true,
+    },
+    {
+      accountHash: 'account-hash-7b16ac8cb4d7f038e4f407df44dd2c46697f3f9053170f49e35e877c1ca12f38',
+      value: true,
+    },
+    {
+      accountHash: 'account-hash-f65a97541eb321b5090f500effbba6e586b4711aef30ba33c7a648d709be49d3',
+      value: true,
+    },
+    {
+      accountHash: 'account-hash-9b5307b34b3928a3351cfe7d4fee4636eb1452cece1bda681d455e181b186536',
+      value: true,
+    },
+    {
+      accountHash: 'account-hash-1dc555fb71b297f1ffa4ba445b340d24c5daca3a20c67b0c6740f762f94e1aaa',
+      value: true,
+    },
+    {
+      accountHash: 'account-hash-62adbef1ae716b55daf469948793707bfb3855a1e164cde0f96df3ee1d2f168d',
+      value: true,
+    },
   ];
 
   const deploy = minterClient.whitelist('set_whitelist', { users }, AdminKeypair.publicKey, [
@@ -61,7 +85,7 @@ export async function freeMint() {
 }
 
 export async function nativeMint() {
-  const NFT_COUNT = 20;
+  const NFT_COUNT = 3;
   const mintCost = await minterClient.getMintCost(NFT_COUNT);
   const deploy = minterClient.nativeMint(
     {

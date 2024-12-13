@@ -23,11 +23,13 @@ import {
 
 import { MINT_SESSION_WASM } from './minter/client/utils';
 
+import { AdminKeypair, User1Keypair } from './accounts';
+
 async function main() {
   //cep78
   // await installCep78();
   // await addNewAclWhitelist();
-  await readCep78Contract();
+  // await readCep78Contract();
   // await whitelistData();
   // await nftDataByAccount();
   //minter
@@ -35,11 +37,13 @@ async function main() {
   // await upgradeMinterContract();
   // await setWhitelist();
   // await setConfig();
-  // await nativeMint();
+  await nativeMint();
   // await freeMint();
-  await readMinterContract();
+  // await readMinterContract();
   // await isAccWhitelistedToMint();
   // console.log(MINT_SESSION_WASM);
+  // console.log(AdminKeypair.publicKey.toHex());
+  // console.log(User1Keypair.publicKey.toAccountHashStr());
 }
 
 main();

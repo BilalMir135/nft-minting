@@ -49,7 +49,7 @@ export class MinterClient {
       only_whitelist: CLValueBuilder.bool(args.onlyWhitelist),
       allow_mint: CLValueBuilder.bool(args.allowMint),
       max_mint: CLValueBuilder.u64(args.max_mint),
-      name: CLValueBuilder.string('New'),
+      name: CLValueBuilder.string('APOC'),
       disable_old: CLValueBuilder.bool(false),
     });
 
@@ -178,7 +178,7 @@ export class MinterClient {
       runtimeArgs,
       deploySender,
       this.networkName,
-      GAS.FREE_MINT,
+      GAS.SET_WHITELIST,
       keys
     );
   }

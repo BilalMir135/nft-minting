@@ -1,6 +1,6 @@
 import { MinterClient } from './client';
 import { NETWORK, NODE_ADDRESS, CEP78_CONTRACT } from '../constants';
-import { AdminKeypair, User1Keypair } from '../accounts';
+import { AdminKeypair } from '../accounts';
 
 const minterClient = new MinterClient(NODE_ADDRESS, NETWORK);
 
@@ -15,7 +15,7 @@ export async function installMinterContract() {
       mintFee: 80e9,
       onlyWhitelist: true,
       allowMint: true,
-      max_mint: 15,
+      max_mint: 20,
     },
     AdminKeypair.publicKey,
     [AdminKeypair]

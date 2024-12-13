@@ -16,12 +16,12 @@ const CEP78Contract = {
     packageHash: 'hash-8f86deb1ac694d81270becf7301f4f073704b133acbf0561f2fe6278aa813a3c',
   },
   [Network.TEST]: {
-    contractHash: 'hash-1094f747e47bfe9fbab68c042411c2f381cd834b02515a3433ac0f38ff9677c9',
-    packageHash: 'hash-4c4e1298ca4dc7bb99a36b43bc8ab6333a083fe91b0549dbb4b0e1b004fa1c38',
+    contractHash: 'hash-54feec16c4dfeaffd3dcbda008e9c820db69c22d4717c91f5937fd25bcc3d4ad',
+    packageHash: 'hash-a12aee42d59ce868fd2d6d49c77f281fc7f7281151edd569b4511f0af4db8f42',
   },
   [Network.MAIN]: {
-    contractHash: 'hash-9181c48193d9630144906428a91c63bef12817836aed1f33332a72803c9a1795',
-    packageHash: 'hash-ad0cd4ef3cfd9e7222706786e51773af771f063ecce4606282999a7a6d6ac495',
+    contractHash: '',
+    packageHash: '',
   },
 };
 
@@ -31,8 +31,8 @@ const MinterContract = {
     packageHash: 'hash-fafd7ffb4edccaa4565192075ac81fdeeffe8690636e2ef211f4cc1a28a64725',
   },
   [Network.TEST]: {
-    contractHash: 'hash-955209e117da90eb653c95252e90dcd212f6e60d6cb94b78decf76c247dfd995',
-    packageHash: 'hash-4f6c75d280bb823da4bce3b13569de2acaace0d6e98a527a1ca41eef97b4762d',
+    contractHash: 'hash-cdd3e3c7f4d54795d25abbf77c217e36b8550ff941a316df0898724b98e644ef',
+    packageHash: 'hash-ecf3bf7a4766c0c9e639b47fef132e482377227904e3882ed4b03b588420ed8d',
   },
   [Network.MAIN]: { contractHash: '', packageHash: '' },
 };
