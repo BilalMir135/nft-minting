@@ -5,20 +5,20 @@ use casper_types::ApiError;
 #[derive(Debug)]
 #[repr(u16)]
 pub enum Error {
-    PermissionDenied = 1,
-    WrongArguments = 2,
-    AdminNotSet = 3,
-    InvalidContext = 4,
-    MissingContractPackageHash = 5,
-    InvalidContractPackageHash = 6,
-    MintLimitExceed = 7,
-    NotWhitelisted = 8,
-    UableToReadPurse = 9,
-    NotEnoughBalance = 10,
-    InvalidAccountHash = 11,
-    MintNotAllowed = 12,
-    MissingPackageHashForUpgrade = 13,
-    MissingContractHashForUpgrade = 14
+    AdminNotSet = 1001,
+    InvalidAccountHash = 1002,
+    InvalidContext = 1003,
+    InvalidContractPackageHash = 1004,
+    MintLimitExceed = 1005,
+    MintNotAllowed = 1006,
+    MissingContractHashForUpgrade = 1007,
+    MissingContractPackageHash = 1008,
+    MissingPackageHashForUpgrade = 1009,
+    NotEnoughBalance = 1010,
+    NotWhitelisted = 1011,
+    PermissionDenied = 1012,
+    UableToReadPurse = 1013,
+    WrongArguments = 1014,
 }
 
 impl From<Error> for ApiError {

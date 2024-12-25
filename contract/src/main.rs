@@ -4,6 +4,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 compile_error!("target arch should be wasm32: compile with '--target wasm32-unknown-unknown'");
 
+// External dependencies
 extern crate alloc;
 use alloc::{
     boxed::Box, 
@@ -14,6 +15,7 @@ use alloc::{
     string::String
 };
 
+// Contract API dependencies
 use casper_contract::{
     contract_api::{runtime, storage},
     unwrap_or_revert::UnwrapOrRevert,
@@ -24,46 +26,12 @@ use casper_types::{
     EntryPointType, EntryPoints, 
     Group, Key, Parameter, RuntimeArgs, URef, U256
 };
-use contract_utils::{ContractContext, OnChainContractStorage};
 
+// Custom dependencies
+use contract_utils::{ContractContext, OnChainContractStorage};
 use contract::minter::MINTER;
 use contract::utils;
 use contract::error::Error;
-
-#[derive(Default)]
-struct Minter(OnChainContractStorage);
-
-impl ContractContext<OnChainContractStorage> for Minter {
-    fn storage(&self) -> &OnChainContractStorage {
-        &self.0
-    }
-}
-
-impl MINTER<OnChainContractStorage> for Minter {}
-
-impl Minter {
-    fn constructor(
-        &self,
-        admin: Key,
-        fund_manager: Key,
-        cep78_package_hash: Key,
-        mint_fee: U256,
-        only_whitelist: bool,
-        allow_mint: bool,
-        max_mint: u64
-    ) {
-        MINTER::init(
-            self,
-            admin,
-            fund_manager,
-            cep78_package_hash,
-            mint_fee,
-            only_whitelist,
-            allow_mint,
-            max_mint
-        )
-    }
-}
 
 const CONSTRUCTOR_GROUP: &str = "constructor";
 
@@ -98,6 +66,51 @@ const NAMED_KEY_ACCESS_UREF_PREFIX: &str = "minter_contract_access";
 const NAMED_KEY_CONTRACT_HASH_PREFIX: &str = "minter_contract_hash";
 const NAMED_KEY_CONTRACT_VERSION: &str = "minter_contract_version"; 
 
+/// Struct representing the minter contract.
+#[derive(Default)]
+struct Minter(OnChainContractStorage);
+
+impl ContractContext<OnChainContractStorage> for Minter {
+    fn storage(&self) -> &OnChainContractStorage {
+        &self.0
+    }
+}
+
+impl MINTER<OnChainContractStorage> for Minter {}
+
+impl Minter {
+    /// Constructor for the minter contract.
+    fn constructor(
+        &self,
+        admin: Key,
+        fund_manager: Key,
+        cep78_package_hash: Key,
+        mint_fee: U256,
+        only_whitelist: bool,
+        allow_mint: bool,
+        max_mint: u64
+    ) {
+        MINTER::init(
+            self,
+            admin,
+            fund_manager,
+            cep78_package_hash,
+            mint_fee,
+            only_whitelist,
+            allow_mint,
+            max_mint
+        )
+    }
+}
+
+// The constructor function takes the following arguments:
+// - admin: The accountHash of admin.
+// - fund_manager: The accountHash of fund manager.
+// - cep78_package_hash: The package hash of cep78 contract.
+// - mint_fee: The fee required to mint NFT.
+// - only_whitelist: The boolean for whitelisting or non-whitelisting mode.
+// - allow_mint: The boolean for enabling and disabling minting.
+// - max_mint: The maximum number of NFTs per accout is allowed to mint.
 #[no_mangle]
 pub extern "C" fn constructor() {
     let admin = runtime::get_named_arg::<Key>(ARG_ADMIN);
@@ -119,6 +132,13 @@ pub extern "C" fn constructor() {
     );
 }
 
+// The set_config function to update state variables:
+// - admin: The accountHash of admin.
+// - fund_manager: The accountHash of fund manager.
+// - mint_fee: The fee required to mint NFT.
+// - only_whitelist: The boolean for whitelisting or non-whitelisting mode.
+// - allow_mint: The boolean for enabling and disabling minting.
+// - max_mint: The maximum number of NFTs per accout is allowed to mint.
 #[no_mangle]
 pub extern "C" fn set_config() {
     let admin = utils::get_optional_named_arg::<Key>(ARG_ADMIN);
@@ -138,6 +158,9 @@ pub extern "C" fn set_config() {
         ).unwrap_or_revert();
 }
 
+// The free_mint function to freely mint NFTs by admin.
+// - nft_owner: The owner of the NFT.
+// - count: The total number of NFTs to mint.
 #[no_mangle]
 pub extern "C" fn free_mint() {
     let nft_owner = runtime::get_named_arg::<Key>(ARG_NFT_OWMER);
@@ -145,6 +168,9 @@ pub extern "C" fn free_mint() {
     Minter::default().free_mint(nft_owner, count).unwrap_or_revert();
 }
 
+// The set_whitelist function to whitelist user.
+// - accounts: The array of accountHashes.
+// - values: The array of boolean againts accountHashes.
 #[no_mangle]
 pub extern "C" fn set_whitelist() {
     let accounts = runtime::get_named_arg::<Vec<Key>>(ARG_WHITELIST_ACCOUNTS);
@@ -152,6 +178,10 @@ pub extern "C" fn set_whitelist() {
     Minter::default().set_whitelist(accounts, values).unwrap_or_revert();
 }
 
+// The native_mint function to mint NFTs by users in-exchange of CSPR tokens.
+// - nft_owner: The owner of the NFT.
+// - count: The total number of NFTs to mint.
+// - source_purse: The source_purse address from which CSPR will be charged.
 #[no_mangle]
 pub extern "C" fn native_mint() {
     let nft_owner = runtime::get_named_arg::<Key>(ARG_NFT_OWMER);
@@ -160,6 +190,9 @@ pub extern "C" fn native_mint() {
     Minter::default().native_mint(nft_owner, count, source_purse).unwrap_or_revert();
 }
 
+// The reset_whitelist function to clear previous record and set new whitelist users record.
+// - accounts: The array of accountHashes.
+// - values: The array of boolean againts accountHashes.
 #[no_mangle]
 pub extern "C" fn reset_whitelist() {
     let accounts = runtime::get_named_arg::<Vec<Key>>(ARG_WHITELIST_ACCOUNTS);
@@ -167,6 +200,8 @@ pub extern "C" fn reset_whitelist() {
     Minter::default().reset_whitelist(accounts, values).unwrap_or_revert();
 }
 
+// The get_mint_cost function to read the cost of minting NFTs.
+// - count: The number of NFTs to be mint.
 #[no_mangle]
 pub extern "C" fn get_mint_cost() {
     let count = runtime::get_named_arg::<u64>(ARG_COUNT);
@@ -174,6 +209,7 @@ pub extern "C" fn get_mint_cost() {
     runtime::ret(CLValue::from_t(mint_cost).unwrap());
 }
 
+// Get all entry points
 fn get_entry_points() -> EntryPoints {
     let mut entry_points = EntryPoints::new();
     entry_points.add_entry_point(EntryPoint::new(
@@ -256,6 +292,7 @@ fn get_entry_points() -> EntryPoints {
     entry_points
 }
 
+// Install contract function
 fn install_contract(name: &str) {
     let admin = runtime::get_named_arg::<Key>(ARG_ADMIN);
     let fund_manager = runtime::get_named_arg::<Key>(ARG_FUND_MANAGER);
@@ -311,6 +348,7 @@ fn install_contract(name: &str) {
     );
     }
 
+// Upgrade contract function
 fn upgrade_contract(name: &str, disable_old: bool) {
     let contract_package_hash = runtime::get_key(&format!("{NAMED_KEY_PACKAGE_HASH_PREFIX}_{name}"))
         .unwrap_or_revert()
@@ -344,6 +382,7 @@ fn upgrade_contract(name: &str, disable_old: bool) {
         storage::new_uref(contract_version).into(),
     );
 }
+
 
 #[no_mangle]
 pub extern "C" fn call() {

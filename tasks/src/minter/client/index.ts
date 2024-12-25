@@ -49,7 +49,7 @@ export class MinterClient {
       only_whitelist: CLValueBuilder.bool(args.onlyWhitelist),
       allow_mint: CLValueBuilder.bool(args.allowMint),
       max_mint: CLValueBuilder.u64(args.max_mint),
-      name: CLValueBuilder.string('APOC'),
+      name: CLValueBuilder.string('BAYC'),
       disable_old: CLValueBuilder.bool(false),
     });
 
@@ -65,7 +65,7 @@ export class MinterClient {
 
   public upgrade(args: UpgradeArg, deploySender: CLPublicKey, keys: Keys.AsymmetricKey[]) {
     const runtimeArgs = RuntimeArgs.fromMap({
-      name: CLValueBuilder.string('APOC'),
+      name: CLValueBuilder.string('BAYC'),
       disable_old: CLValueBuilder.bool(args.disableOld),
     });
 
